@@ -6,8 +6,21 @@ class DetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استقبال الـ ArticleModel اللي تم إرساله عبر الـ arguments
-    final article = ModalRoute.of(context)!.settings.arguments as ArticleModel;
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+
+    if (arguments is! ArticleModel) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Details News'),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Text('بيانات الخبر غير متاحة'),
+        ),
+      );
+    }
+
+    final article = arguments;
 
     return Scaffold(
       appBar: AppBar(
@@ -15,25 +28,36 @@ class DetailsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (article.image != null && article.image!.isNotEmpty)
+            if (article.image != null &&
+                article.image!.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(12),
                 child: Image.network(
                   article.image!,
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Container(height: 220, color: Colors.grey[300]),
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 220,
+                      width: double.infinity,
+                      color: Colors.grey.shade300,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.broken_image,
+                        size: 40,
+                      ),
+                    );
+                  },
                 ),
               ),
             const SizedBox(height: 16),
             Text(
-              article.title ?? '',
+              article.title ?? 'بدون عنوان',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -41,7 +65,9 @@ class DetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              article.subTitle ?? 'لا يوجد تفاصيل إضافية متاحة.',
+              article.subTitle?.isNotEmpty == true
+                  ? article.subTitle!
+                  : 'لا توجد تفاصيل إضافية متاحة.',
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,

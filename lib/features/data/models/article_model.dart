@@ -11,9 +11,9 @@ class ArticleModel {
 
   factory ArticleModel.fromJson(Map<String, dynamic> json) {
     return ArticleModel(
-      image: json['urlToImage'],
-      title: json['title'] ?? '',
-      subTitle: json['description'],
+      image: json['urlToImage'] as String?,
+      title: json['title'] as String? ?? '',
+      subTitle: json['description'] as String?,
     );
   }
 }

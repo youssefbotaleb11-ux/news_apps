@@ -1,43 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:news_apps/core/routes/app_routes.dart';
-import 'package:news_apps/features/view/screens/details_screen.dart';
-import 'package:news_apps/features/view/screens/home_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
-  runApp(const NewsApp());
+import 'package:news_apps/core/routes/app_routes.dart';
+import 'package:news_apps/features/data/models/article_model.dart';
+import 'package:news_apps/features/cubit/news_cubit.dart';
+import 'package:news_apps/features/data/service/news_service.dart';
+import 'package:news_apps/features/view/screens/home_screen.dart';
+import 'package:news_apps/features/view/screens/details_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  await Hive.openBox<ArticleModel>('favorites_box');
+
+  runApp(const MyApp());
 }
 
-class NewsApp extends StatefulWidget {
-  const NewsApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
   @override
-  State<NewsApp> createState() => _NewsAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _NewsAppState extends State<NewsApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-
-  void _toggleTheme() {
-    setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    });
-  }
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
-      theme: ThemeData.light(useMaterial3: true),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      title: 'News App',
+
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.blue,
+      ),
+
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
       initialRoute: AppRoutes.home,
+
+      // استخدام الـ routes المباشرة لتجنب مشاكل onGenerateRoute
       routes: {
-        AppRoutes.details: (context) => const DetailsScreen(),
-        AppRoutes.home: (context) => HomeScreen(
-              onToggleTheme: _toggleTheme,
-              isDarkMode: _themeMode == ThemeMode.dark,
+        AppRoutes.home: (context) => BlocProvider(
+              create: (_) => NewsCubit(NewsService()),
+              child: HomeScreen(
+                isDarkMode: isDarkMode,
+                onToggleTheme: () {
+                  setState(() {
+                    isDarkMode = !isDarkMode;
+                  });
+                },
+              ),
             ),
+        AppRoutes.details: (context) => const DetailsScreen(),
       },
     );
   }

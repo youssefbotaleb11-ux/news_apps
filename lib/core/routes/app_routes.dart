@@ -1,4 +1,4 @@
 abstract class AppRoutes {
-  static String home = "home";
-  static String details = "details";
+  static const String home = '/';
+  static const String details = '/details';
 }
